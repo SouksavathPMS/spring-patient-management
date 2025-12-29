@@ -16,7 +16,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers(
+                                "/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/h2-console/**"
+                        ).permitAll()
                         .requestMatchers("/api/**").permitAll() // Allow all API endpoints
                         .anyRequest().authenticated()
                 )
