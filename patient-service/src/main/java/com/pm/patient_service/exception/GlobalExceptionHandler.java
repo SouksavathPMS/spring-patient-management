@@ -1,6 +1,7 @@
 package com.pm.patient_service.exception;
 
 import com.pm.patient_service.dto.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -84,13 +86,44 @@ public class GlobalExceptionHandler {
     // Handle other common exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGlobalException(Exception ex) {
-        // Log the full exception for debugging
-        ex.printStackTrace();
-
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ApiResponse.error(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         "An unexpected error occurred. Please try again later."
+                )
+        );
+    }
+
+    // Handle duplicate resource
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDuplicateResource(DuplicateResourceException ex) {
+        log.error ( "[Status {}] {}", HttpStatus.CONFLICT.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ApiResponse.error(
+                        HttpStatus.CONFLICT.value(),
+                        ex.getMessage()
+                )
+        );
+    }
+
+    @ExceptionHandler(PatientNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handlePatientNotFound(PatientNotFoundException ex) {
+        log.error ( "[Status {}] {}", HttpStatus.NOT_FOUND.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ApiResponse.error(
+                        HttpStatus.NOT_FOUND.value(),
+                        ex.getMessage()
+                )
+        );
+    }
+
+    @ExceptionHandler(EmailNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEmailNotFound(EmailNotFoundException ex) {
+        log.error ( "[Status {}] {}", HttpStatus.NOT_FOUND.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ApiResponse.error(
+                        HttpStatus.NOT_FOUND.value(),
+                        ex.getMessage()
                 )
         );
     }

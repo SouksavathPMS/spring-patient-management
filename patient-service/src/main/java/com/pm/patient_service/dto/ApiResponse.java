@@ -22,16 +22,16 @@ public class ApiResponse<T> {
     private Object errors;
 
     // Success response
-    public static <T> ApiResponse<T> success(T data,  String message) {
+    public static <T> ApiResponse<T> success(int status, T data,  String message) {
         return  ApiResponse.<T>builder()
-                .status(HttpStatus.OK.value())
+                .status(status)
                 .message(message)
                 .data(data)
                 .build();
     }
 
-    public static <T> ApiResponse<T> success(T data) {
-        return success(data, "Success");
+    public static <T> ApiResponse<T> success(int status, T data) {
+        return success(status, data, "Success");
     }
 
     // Error response
