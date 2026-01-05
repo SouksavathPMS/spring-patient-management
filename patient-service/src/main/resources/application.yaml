@@ -1,6 +1,32 @@
 spring:
   application:
     name: patient-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5001/db
+    driver-class-name: org.postgresql.Driver
+    username: admin_user
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  kafka:
+    bootstrap-servers: kafka-service:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      retries: 3
+      properties:
+        linger.ms: 1
+        batch.size: 16384
+      acks: all
+
 #  h2:
 #    console:
 #      enabled: true
@@ -32,5 +58,8 @@ springdoc:
     path: /api-docs/json
   packages-to-scan: com.pm.patient_service
 
+
 server:
   port: 4000
+
+

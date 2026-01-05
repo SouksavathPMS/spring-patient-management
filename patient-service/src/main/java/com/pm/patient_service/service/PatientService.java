@@ -5,6 +5,8 @@ import com.pm.patient_service.dto.patients.response.PatientResponseDTO;
 import com.pm.patient_service.exception.DuplicateResourceException;
 import com.pm.patient_service.exception.EmailNotFoundException;
 import com.pm.patient_service.exception.PatientNotFoundException;
+import com.pm.patient_service.grpc.BillingServiceGrpcClient;
+import com.pm.patient_service.kafka.KafkaProducer;
 import com.pm.patient_service.mapper.PatientMapper;
 import com.pm.patient_service.model.Patient;
 import com.pm.patient_service.repository.PatientRepository;
@@ -18,8 +20,12 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class PatientService {
+
     private final PatientRepository patientRepository;
-     public List<PatientResponseDTO> getAllPatients() {
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
+    private final KafkaProducer kafkaProducer;
+
+    public List<PatientResponseDTO> getAllPatients() {
          final List<Patient> patients = patientRepository.findAll();
         return patients.stream().map(PatientMapper::toPatientResponseDTO).toList();
     }
@@ -35,13 +41,22 @@ public class PatientService {
         if (patientRepository.existsByEmail(patientRequestDTO.getEmail())) {
             throw new DuplicateResourceException("A patient with " + patientRequestDTO.getEmail() + "'s email already exists");
         }
-         Patient patient = PatientMapper.toPatient(patientRequestDTO);
-         patientRepository.save(patient);
-         return PatientMapper.toPatientResponseDTO(patient);
+         Patient newPatient = patientRepository.save(PatientMapper.toPatient(patientRequestDTO));
+
+        // Create billing account with grpc service
+        billingServiceGrpcClient.createBillingAccount(
+                newPatient.getId().toString(),
+                newPatient.getName(),
+                newPatient.getEmail()
+        );
+
+        // Send event to kafkaProducer
+        kafkaProducer.sendEvent(newPatient);
+
+         return PatientMapper.toPatientResponseDTO(newPatient);
     }
 
     public PatientResponseDTO updatePatient(UUID id, PatientRequestDTO patientRequestDTO) {
-
          // find patient by given id
          Patient patient = patientRepository.findById(id).orElseThrow(
                  () -> new  PatientNotFoundException("Patient with id " + id + " not found")
