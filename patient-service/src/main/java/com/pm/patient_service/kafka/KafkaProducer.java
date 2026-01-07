@@ -33,7 +33,6 @@ public class KafkaProducer {
             CompletableFuture<SendResult<String, byte[]>> future =
                     kafkaTemplate.send(
                             TOPIC,
-                            patient.getId().toString(),
                             eventBytes
                     );
 
