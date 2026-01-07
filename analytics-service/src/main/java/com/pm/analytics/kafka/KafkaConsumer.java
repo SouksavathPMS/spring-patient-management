@@ -10,7 +10,6 @@ import patient.events.PatientEvent;
 @Slf4j
 @Service
 public class KafkaConsumer {
-
     @KafkaListener(topics = "patient", groupId = "analytics-service")
     public void consume(byte[] events) {
         try {
