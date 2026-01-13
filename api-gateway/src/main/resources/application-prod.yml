@@ -1,0 +1,34 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: patient-service-route
+              uri: http://patient-service.patient-management.local:4000
+              predicates:
+                - Path=/api/v1/patients/**
+              filters:
+                - JwtValidation
+
+            - id: api-docs-patient-route
+              uri: http://patient-service.patient-management.local:4000
+              predicates:
+                - Path=/api-docs/patients
+              filters:
+                - RewritePath=/api-docs/patients, /v3/api-docs
+
+            - id: auth-service-route
+              uri: http://auth-service.patient-management.local:4500
+              predicates:
+                - Path=/api/v1/auth/**
+
+            - id: api-docs-auth-route
+              uri: http://auth-service.patient-management.local:4500
+              predicates:
+                - Path=/api-docs/auth/**
+              filters:
+                - RewritePath=/api-docs/auth, /v3/api-docs
+
+server:
+  port: 4004
